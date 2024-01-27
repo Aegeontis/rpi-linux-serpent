@@ -69,9 +69,13 @@ jobs:
         fetch-depth: 1
         clean: true
 
+    - name: Clone rpi linux kernel source
+      run: git clone --depth=1 https://github.com/raspberrypi/linux ./rpi-linux
+
     - name: Build kernel ${{matrix.name}}
       run: |
-        mkdir ${{github.workspace}}/build
+        cd ./rpi-linux
+        mkdir ./build
         export ARCH=${{matrix.arch}}
         if [[ "$ARCH" == "arm64" ]]; then
           export CROSS_COMPILE=aarch64-linux-gnu-
@@ -82,18 +86,20 @@ jobs:
           export DTS_SUBDIR=
           export IMAGE=zImage
         fi
-        make O=${{github.workspace}}/build ${{matrix.defconfig}}
-        scripts/config --file ${{github.workspace}}/build/.config --set-val CONFIG_WERROR y
-        make O=${{github.workspace}}/build -j ${{env.NUM_JOBS}} $IMAGE modules dtbs
-        mkdir -p ${{github.workspace}}/install/boot/overlays
-        make O=${{github.workspace}}/build INSTALL_MOD_PATH=${{github.workspace}}/install modules_install
-        cp ${{github.workspace}}/build/arch/${ARCH}/boot/dts/${DTS_SUBDIR}/*.dtb ${{github.workspace}}/install/boot/
-        cp ${{github.workspace}}/build/arch/${ARCH}/boot/dts/overlays/*.dtb* ${{github.workspace}}/install/boot/overlays/
-        cp ${{github.workspace}}/arch/${ARCH}/boot/dts/overlays/README ${{github.workspace}}/install/boot/overlays/
-        cp ${{github.workspace}}/build/arch/${ARCH}/boot/$IMAGE ${{github.workspace}}/install/boot/${{matrix.kernel}}.img
+        make O=./build ${{matrix.defconfig}}
+        scripts/config --file ./build/.config --set-val CONFIG_WERROR y
+        # enable serpent crypto support
+        scripts/config --file ./build/.config --set-val CONFIG_CRYPTO_SERPENT y
+        make O=./build -j ${{env.NUM_JOBS}} $IMAGE modules dtbs
+        mkdir -p ./install/boot/overlays
+        make O=./build INSTALL_MOD_PATH=./install modules_install
+        cp ./build/arch/${ARCH}/boot/dts/${DTS_SUBDIR}/*.dtb ./install/boot/
+        cp ./build/arch/${ARCH}/boot/dts/overlays/*.dtb* ./install/boot/overlays/
+        cp ./arch/${ARCH}/boot/dts/overlays/README ./install/boot/overlays/
+        cp ./build/arch/${ARCH}/boot/$IMAGE ./install/boot/${{matrix.kernel}}.img
 
     - name: Tar build
-      run: tar -cvf ${{matrix.name}}_build.tar -C ${{github.workspace}}/install .
+      run: tar -cvf ${{matrix.name}}_build.tar -C ./install .
 
     - name: Upload results
       uses: actions/upload-artifact@v3
