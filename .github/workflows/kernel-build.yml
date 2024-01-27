@@ -1,4 +1,4 @@
-name: Pi kernel build tests
+name: Kernel build
 
 on:
   # run daily at 00:00
