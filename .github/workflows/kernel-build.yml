@@ -99,7 +99,7 @@ jobs:
         cp ./build/arch/${ARCH}/boot/$IMAGE ./install/boot/${{matrix.kernel}}.img
 
     - name: Tar build
-      run: tar -cvf ${{matrix.name}}_build.tar -C ./install .
+      run: tar -cvf ${{matrix.name}}_build.tar -C ./rpi-linux/install .
 
     - name: Upload results
       uses: actions/upload-artifact@v3
