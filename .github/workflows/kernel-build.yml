@@ -92,7 +92,7 @@ jobs:
         scripts/config --file ./build/.config --set-val CONFIG_CRYPTO_SERPENT y
         make O=./build -j ${{env.NUM_JOBS}} $IMAGE modules dtbs
         mkdir -p ./install/boot/overlays
-        make O=./build INSTALL_MOD_PATH=./install modules_install
+        make O=./build INSTALL_MOD_PATH=$(pwd)/install modules_install
         cp ./build/arch/${ARCH}/boot/dts/${DTS_SUBDIR}/*.dtb ./install/boot/
         cp ./build/arch/${ARCH}/boot/dts/overlays/*.dtb* ./install/boot/overlays/
         cp ./arch/${ARCH}/boot/dts/overlays/README ./install/boot/overlays/
