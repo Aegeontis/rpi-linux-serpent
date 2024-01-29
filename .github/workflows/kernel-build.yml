@@ -89,7 +89,7 @@ jobs:
         make O=./build ${{matrix.defconfig}}
         scripts/config --file ./build/.config --set-val CONFIG_WERROR y
         # enable serpent crypto support
-        scripts/config --file ./build/.config --set-val CONFIG_CRYPTO_SERPENT y
+        scripts/config --file ./build/.config --set-val CONFIG_CRYPTO_SERPENT m
         make O=./build -j ${{env.NUM_JOBS}} $IMAGE modules dtbs
         mkdir -p ./install/boot/overlays
         make O=./build INSTALL_MOD_PATH=$(pwd)/install modules_install
